@@ -15,9 +15,9 @@ print_banner() {
 ##  88P   Y8b      d8''''''''8b   88        88  ##
 ##  88     '88.   d8'        '8b  88        88  ##
 ##  88       Y8b d8'          '8b 888888888 88  ##
-##        CREATED BY FORHAD                    ##
-##  GitHub: github.com/Forhadj                 ##
-##  YT: youtube.com/@forhad2.00                ##
+##        CREATED BY FORHAD👽                   ##
+##  GitHub: github.com/Forhadj                  ##
+##  YT: youtube.com/@forhad2.00                 ##
 ##################################################
 "
 }
