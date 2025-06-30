@@ -1,94 +1,69 @@
 #!/bin/bash
 
-# NetHunter CLI Installer by Forhad
-INSTALLED_ROOTFS_DIR="/data/data/com.termux/files/var/lib/proot-distro/installed-rootfs"
+# FORHAD NetHunter Installer (Standalone)
+# Uses custom rootfs (not proot-distro)
 
 print_banner() {
     clear
     echo "##################################################
 ##                                              ##
-##  88      a8P         db        88        88  ##
-##  88    .88'         d88b       88        88  ##
-##  88   88'          d8''8b      88        88  ##
-##  88 d88           d8'  '8b     88        88  ##
-##  8888'88.        d8YaaaaY8b    88        88  ##
-##  88P   Y8b      d8''''''''8b   88        88  ##
-##  88     '88.   d8'        '8b  88        88  ##
-##  88       Y8b d8'          '8b 888888888 88  ##
-##        CREATED BY FORHAD👽                   ##
-##  GitHub: github.com/Forhadj                  ##
-##  YT: youtube.com/@forhad2.00                 ##
-##################################################
-"
+##      FORHAD NetHunter Installer (Lite)      ##
+##      GitHub: github.com/Forhadj             ##
+##      YouTube: youtube.com/@forhad2.00       ##
+##################################################"
 }
 
-author_info() {
-    print_banner
-    echo
-    echo "        Creator Info"
-    echo
-    echo "Name: Md Forhad"
-    echo "GitHub: https://github.com/Forhadj"
-    echo "YouTube: https://youtube.com/@forhad2.00"
-    echo "Telegram: https://t.me/f_forhad"
-    echo "Facebook: https://facebook.com/forhadhasan995"
-    echo
-    echo "Wait... Installation is starting!"
-    sleep 3
-}
-
-update() {
-    apt update -y
-    apt upgrade -y
-}
-
-check_termux() {
-    if [[ $HOME != /data/data/com.termux/files/home ]]; then
-        echo "⚠️ This script is for Termux only."
-        exit 1
+download_rootfs() {
+    echo "[*] Downloading Kali NetHunter RootFS..."
+    mkdir -p kali-fs
+    cd kali-fs
+    if [ ! -f rootfs.tar.xz ]; then
+        curl -L -o rootfs.tar.xz https://raw.githubusercontent.com/EXALAB/AnLinux-Resources/master/Rootfs/Kali/arm64/kali-rootfs-arm64.tar.xz
     fi
+    echo "[✔] Download complete."
 }
 
-install_pkg() {
-    pkg install -y proot-distro git wget curl nano
+extract_rootfs() {
+    echo "[*] Extracting Kali RootFS..."
+    tar -xJf rootfs.tar.xz --exclude='dev' > /dev/null
+    echo "[✔] Extraction complete."
 }
 
-install_kali() {
-    if [[ -d "$PREFIX/var/lib/proot-distro/installed-rootfs/kali-linux" ]]; then
-        echo "NetHunter already installed."
-        read -p "Reinstall? (y/N): " opt
-        [[ "$opt" =~ ^[Yy]$ ]] && reinstall_kali || exit
-    else
-        echo "Installing NetHunter..."
-        proot-distro install kali-linux
-    fi
-}
+setup_launcher() {
+    echo "[*] Setting up launcher..."
+    cd ..
+    cat > start-nethunter.sh <<- EOM
+#!/bin/bash
+cd kali-fs
+unset LD_PRELOAD
+command="proot \
+  --link2symlink \
+  -0 \
+  -r kali-fs \
+  -b /dev \
+  -b /proc \
+  -b /data/data/com.termux/files/home:/root \
+  -w /root \
+  /usr/bin/env -i \
+  HOME=/root \
+  PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games \
+  TERM=\$TERM \
+  LANG=C.UTF-8 \
+  /bin/bash --login"
+eval \$command
+EOM
 
-reinstall_kali() {
-    proot-distro remove kali-linux
-    proot-distro clear-cache
-    proot-distro install kali-linux
-}
-
-final_setup() {
-    cat > $PREFIX/bin/nethunter << 'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-proot-distro login kali-linux
-EOF
-    chmod +x $PREFIX/bin/nethunter
-
-    echo
-    echo "✅ Installation Complete!"
-    echo "📦 Run with: nethunter"
+    chmod +x start-nethunter.sh
+    echo "[✔] Done. Start with: ./start-nethunter.sh"
 }
 
 main() {
-    author_info
-    check_termux
-    update
-    install_pkg
-    install_kali
-    final_setup
+    print_banner
+    pkg install proot tar curl -y
+    download_rootfs
+    extract_rootfs
+    setup_launcher
+    echo "✅ NetHunter Ready. Use: ./start-nethunter.sh"
 }
 
 main
