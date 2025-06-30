@@ -54,26 +54,26 @@ install_pkg() {
 }
 
 install_kali() {
-    if [[ -d "$PREFIX/var/lib/proot-distro/installed-rootfs/kali" ]]; then
+    if [[ -d "$PREFIX/var/lib/proot-distro/installed-rootfs/kali-linux" ]]; then
         echo "NetHunter already installed."
         read -p "Reinstall? (y/N): " opt
         [[ "$opt" =~ ^[Yy]$ ]] && reinstall_kali || exit
     else
         echo "Installing NetHunter..."
-        proot-distro install kali
+        proot-distro install kali-linux
     fi
 }
 
 reinstall_kali() {
-    proot-distro remove kali
+    proot-distro remove kali-linux
     proot-distro clear-cache
-    proot-distro install kali
+    proot-distro install kali-linux
 }
 
 final_setup() {
     cat > $PREFIX/bin/nethunter << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
-proot-distro login kali
+proot-distro login kali-linux
 EOF
     chmod +x $PREFIX/bin/nethunter
 
